@@ -21,14 +21,14 @@ if 'show_edit_modifier_form' not in st.session_state:
 
 def prompt_form(prompt=None):
     name = st.text_input('Prompt Name', value=prompt['name'] if prompt else "")
-    prompt = st.text_area('Prompt Text', value=prompt['text'] if prompt else "")
-    return name, prompt
+    text = st.text_area('Prompt Text', value=prompt['prompt'] if prompt else "")
+    return name, text
 
 
 def prompt_modifier_form(mod=None):
-    nome = st.text_input('Prompt Modifier Name', key='mod_name', value=mod['name'] if mod else "")
-    texto = st.text_area('Prompt Modifier Text', key='mod_text', value=mod['text'] if mod else "")
-    return nome, texto
+    name = st.text_input('Prompt Modifier Name', key='mod_name', value=mod['name'] if mod else "")
+    text = st.text_area('Prompt Modifier Text', key='mod_text', value=mod['prompt'] if mod else "")
+    return name, text
 
 
 def render_prompt_section():
@@ -81,8 +81,9 @@ def render_prompt_section():
                 if response.ok:
                     name, prompt = prompt_form(response.json())
                     if st.button('💾 Save changes', key= 'save_edit_prompt_button'):
-                        update = {'name': name, 'text': prompt}
+                        update = {'name': name, 'prompt': prompt}
                         response = requests.put(f'{API_URL}/prompts/{prompt_id}', json=update)
+                        print(response)
                         if response.ok:
                             st.success('✅ Prompt updated!')
                         else:
@@ -152,7 +153,7 @@ def render_prompt_modifiers_page():
                 if response.ok:
                     name, prompt = prompt_modifier_form(response.json())
                     if st.button('💾 Save changes', key= 'save_edit_prompt_modifier_button'):
-                        update = {'name': name, 'text': prompt}
+                        update = {'name': name, 'prompt': prompt}
                         response = requests.put(f'{API_URL}/prompt-modifiers/{prompt_modifier_id}', json=update)
                         if response.ok:
                             st.success('✅ Prompt modifier updated!')

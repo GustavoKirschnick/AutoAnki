@@ -20,6 +20,8 @@ from app.schemas import (
     Word,
     WordList,
     WordPublic,
+    PromptUpdate,
+    PromptModifierUpdate,
 )
 
 app = FastAPI()
@@ -184,14 +186,29 @@ def get_prompts(limit: int = 10, session: Session = Depends(get_session)):
 @app.get('/prompts/{prompt_id}', response_model=PromptsPublic)
 def get_prompt_by_id(prompt_id: int, session: Session = Depends(get_session)):
     prompt = session.scalar(select(PromptDB).where(PromptDB.id == prompt_id))
-
     if not prompt:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND, detail=f'Prompt with id {prompt_id} not found'
         )
+    
+    return prompt
 
-    return {'prompt': prompt}
+@app.put('/prompts/{prompt_id}', status_code=HTTPStatus.OK, response_model=Message)
+def update_prompt_by_id(prompt_id: int, update_data: PromptUpdate, session: Session = Depends(get_session)):
+    prompt = session.scalar(select(PromptDB).where(PromptDB.id == prompt_id))
 
+    if not prompt:
+        raise HTTPException(
+            status_code= HTTPStatus.NOT_FOUND,
+            detail= f'Prompt with id {prompt_id} not found'
+        )
+    
+    prompt.name = update_data.name
+    prompt.prompt = update_data.prompt
+    session.commit()
+    session.refresh(prompt)
+
+    return {'message': 'The prompt was updated'}
 
 @app.post('/prompt-modifiers/', status_code=HTTPStatus.CREATED, response_model=PromptModifierPublic)
 def create_prompt_modifier(prompt_modifier: PromptModifier, session: Session = Depends(get_session)):
@@ -241,4 +258,21 @@ def get_prompt_by_id(prompt_modifier_id: int, session: Session = Depends(get_ses
             status_code=HTTPStatus.NOT_FOUND, detail=f'Prompt modifier with id {prompt_modifier_id} not found'
         )
 
-    return {'prompt_modifier': prompt_modifier}
+    return prompt_modifier
+
+@app.put('/prompt-modifiers/{prompt_modifier_id}', status_code=HTTPStatus.OK, response_model=Message)
+def update_prompt_by_id(prompt_modifier_id: int, update_data: PromptModifierUpdate, session: Session = Depends(get_session)):
+    prompt_modifier = session.scalar(select(PromptModifierDB).where(PromptModifierDB.id == prompt_modifier_id))
+
+    if not prompt_modifier:
+        raise HTTPException(
+            status_code= HTTPStatus.NOT_FOUND,
+            detail= f'Prompt modifier with id {prompt_modifier_id} not found'
+        )
+    
+    prompt_modifier.name = update_data.name
+    prompt_modifier.prompt = update_data.prompt
+    session.commit()
+    session.refresh(prompt_modifier)
+
+    return {'message': 'The prompt modifier was updated'}

@@ -40,6 +40,14 @@ class PromptsPublic(BaseModel):
     name: str
     prompt: str
 
+    class Config:
+        orm_mode = True 
+
+
+class PromptUpdate(BaseModel):
+    name: str
+    prompt: str
+
 
 class PromptModifier(BaseModel):
     name: str
@@ -48,6 +56,11 @@ class PromptModifier(BaseModel):
 
 class PromptModifierPublic(BaseModel):
     id: int
+    name: str
+    prompt: str
+
+
+class PromptModifierUpdate(BaseModel):
     name: str
     prompt: str
 
