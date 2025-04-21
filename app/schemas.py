@@ -22,6 +22,14 @@ class Cards(BaseModel):
     prompt_id: int
     prompt_modifier: list[int]
 
+class CardOutput(BaseModel):
+    front: str
+    back: str
+
+class GenerateCardsInput(BaseModel):
+    words: list[str]
+    prompt: str
+    modifier: list[str]
 
 class WordPublic(BaseModel):
     id: int

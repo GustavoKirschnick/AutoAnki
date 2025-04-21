@@ -4,20 +4,17 @@ import streamlit as st
 
 API_URL = 'http://localhost:8000'
 
-if 'show_create_form' not in st.session_state:
-    st.session_state.show_create_form = False
-if 'show_delete_form' not in st.session_state:
-    st.session_state.show_delete_form = False
-if 'show_edit_form' not in st.session_state:
-    st.session_state.show_edit_form = False
-if 'show_create_modifier_form' not in st.session_state:
-    st.session_state.show_create_modifier_form = False
-if 'show_delete_modifier_form' not in st.session_state:
-    st.session_state.show_delete_modifier_form = False
-if 'show_edit_modifier_form' not in st.session_state:
-    st.session_state.show_edit_modifier_form = False
-
-
+def initialize_session_state():
+    default_states = {
+        'show_create_form': False,
+        'show_delete_form': False,
+        'show_edit_form': False,
+        'show_create_modifier_form': False,
+        'show_delete_modifier_form': False,
+        'show_edit_modifier_form': False
+    }
+    for key, default in default_states.items():
+        st.session_state.setdefault(key, default)
 
 def prompt_form(prompt=None):
     name = st.text_input('Prompt Name', value=prompt['name'] if prompt else "")
@@ -30,30 +27,26 @@ def prompt_modifier_form(mod=None):
     text = st.text_area('Prompt Modifier Text', key='mod_text', value=mod['prompt'] if mod else "")
     return name, text
 
-
-def render_prompt_section():
-    st.header('🔧 Prompt Manager')
-
+def render_prompt_buttons():
     col1, col2, col3, col4 = st.columns(4)
-
     with col1:
-        list = st.button('📋 List prompts', key= 'list_prompts_button')
+        list_prompts = st.button('📋 List prompts')
     with col2:
-        if st.button('➕ Create prompt', key = 'create_prompt_button'):
+        if st.button('➕ Create prompt'):
             st.session_state.show_create_form = True
     with col3:
-        if st.button('✏️ Edit prompt', key='edit_prompt_button'):
+        if st.button('✏️ Edit prompt'):
             st.session_state.show_edit_form = True
     with col4:
-        if st.button('🗑️ Delete prompt', key='delete_prompt_button'):
+        if st.button('🗑️ Delete prompt'):
             st.session_state.show_delete_form = True
+    return list_prompts
 
-    if list:
-        with st.expander('Prompt List', expanded=True):
+def list_prompts():
+    with st.expander('Prompt List', expanded=True):
             response = requests.get(f'{API_URL}/prompts/?limit=50')
             if response.ok:
-                data = response.json()
-                prompts = data.get('prompts', [])
+                prompts = response.json().get('prompts', [])
                 if prompts:
                     df = pd.DataFrame(prompts)
                     st.dataframe(df[['id', 'name', 'prompt']], use_container_width=True)
@@ -62,8 +55,8 @@ def render_prompt_section():
             else:
                 st.error('Error acessing prompts')
 
-    if st.session_state.show_create_form:
-        with st.expander('➕ New Prompt', expanded=True):
+def create_prompt():
+    with st.expander('➕ New Prompt', expanded=True):
             name, prompt = prompt_form()
             if st.button('💾 Save new prompt', key= 'save_new_prompt_button'):
                 response = requests.post(f'{API_URL}/prompts', json={"name": name, "prompt": prompt})
@@ -73,8 +66,8 @@ def render_prompt_section():
                 else:
                     st.error('❌ Error creating the prompt')
 
-    if st.session_state.show_edit_form:
-        with st.expander('✏️ Edit Prompt', expanded=True):
+def edit_prompt():
+    with st.expander('✏️ Edit Prompt', expanded=True):
             prompt_id = st.text_input('Prompt ID to edit', key= 'edit_prompt_id_input')
             if prompt_id:
                 response = requests.get(f'{API_URL}/prompts/{prompt_id}')
@@ -83,7 +76,6 @@ def render_prompt_section():
                     if st.button('💾 Save changes', key= 'save_edit_prompt_button'):
                         update = {'name': name, 'prompt': prompt}
                         response = requests.put(f'{API_URL}/prompts/{prompt_id}', json=update)
-                        print(response)
                         if response.ok:
                             st.success('✅ Prompt updated!')
                         else:
@@ -91,8 +83,8 @@ def render_prompt_section():
                 else:
                     st.error('❌ Prompt was not found')
 
-    if st.session_state.show_delete_form:
-        with st.expander('🗑️ Delete Prompt', expanded=True):
+def delete_prompt():
+    with st.expander('🗑️ Delete Prompt', expanded=True):
             prompt_id = st.text_input('Prompt ID to delete', key= 'delete_prompt_id_input')
             if st.button('🚨 Confirm exclusion', key= 'confirm_exclusion_button'):
                 response = requests.delete(f'{API_URL}/prompts/{prompt_id}')
@@ -102,26 +94,34 @@ def render_prompt_section():
                     st.error('❌ Error deleting the prompt')
                 st.session_state.show_delete_form = False
 
+def render_prompt_section():
+    st.header('🔧 Prompt Manager')
+    if render_prompt_buttons():
+        list_prompts()
+    if st.session_state.show_create_form:
+        create_prompt()
+    if st.session_state.show_edit_form:
+        edit_prompt()
+    if st.session_state.show_delete_form:
+        delete_prompt()
 
-def render_prompt_modifiers_page():
-    st.header('🔧 Prompt Modifier Manager')
-
+def render_prompt_modifier_buttons():
     col1, col2, col3, col4 = st.columns(4)
-
     with col1:
-        listar = st.button('📋 List prompt modifiers', key= 'list_prompt_modifiers_button')
+        list_mods = st.button('📋 List prompt modifiers')
     with col2:
-        if st.button('➕ Create prompt modifier', key= 'create_prompt_modifier_button'):
+        if st.button('➕ Create prompt modifier'):
             st.session_state.show_create_modifier_form = True
     with col3:
-        if st.button('✏️ Edit prompt modifier', key= 'edit_prompt_modifier_button'):
+        if st.button('✏️ Edit prompt modifier'):
             st.session_state.show_edit_modifier_form = True
     with col4:
-        if st.button('🗑️ Delete prompt modifier', key= 'delete_prompt_modifier_button'):
+        if st.button('🗑️ Delete prompt modifier'):
             st.session_state.show_delete_modifier_form = True
+    return list_mods
 
-    if listar:
-        with st.expander('Prompt Modifier List', expanded=True):
+def list_prompt_modifiers():
+    with st.expander('Prompt Modifier List', expanded=True):
             response = requests.get(f'{API_URL}/prompt-modifiers/?limit=50')
             if response.ok:
                 data = response.json()
@@ -134,8 +134,8 @@ def render_prompt_modifiers_page():
             else:
                 st.error('Error acessing prompt modifiers')
 
-    if st.session_state.show_create_modifier_form:
-        with st.expander('➕ New Prompt Modifier', expanded=True):
+def create_prompt_modifier():
+    with st.expander('➕ New Prompt Modifier', expanded=True):
             name, prompt = prompt_modifier_form()
             if st.button('💾 Save new prompt modifier', key= 'save_new_prompt_modifier_button'):
                 response = requests.post(f'{API_URL}/prompt-modifiers', json={"name": name, "prompt": prompt})
@@ -145,8 +145,8 @@ def render_prompt_modifiers_page():
                 else:
                     st.error('❌ Error creating the prompt modifier')
 
-    if st.session_state.show_edit_modifier_form:
-        with st.expander('✏️ Edit Prompt Modifier', expanded=True):
+def edit_prompt_modifier():
+    with st.expander('✏️ Edit Prompt Modifier', expanded=True):
             prompt_modifier_id = st.text_input('Prompt modifier ID to edit', key='edit_prompt_modifier_id_input')
             if prompt_modifier_id:
                 response = requests.get(f'{API_URL}/prompt-modifiers/{prompt_modifier_id}')
@@ -162,8 +162,8 @@ def render_prompt_modifiers_page():
                 else:
                     st.error('❌ Prompt modifier was not found')
 
-    if st.session_state.show_delete_modifier_form:
-        with st.expander('🗑️ Delete Prompt Modifier', expanded=True):
+def delete_prompt_modifier():
+    with st.expander('🗑️ Delete Prompt Modifier', expanded=True):
             prompt_modifier_id = st.text_input('Prompt modifier ID to delete', key= 'delete_prompt_modifier_id_input')
             if st.button('🚨 Confirm exclusion', key= 'confirm_delete_prompt_modifier_button'):
                 response = requests.delete(f'{API_URL}/prompt-modifiers/{prompt_modifier_id}')
@@ -173,9 +173,20 @@ def render_prompt_modifiers_page():
                     st.error('❌ Error deleting the prompt modifier')
                 st.session_state.show_delete_modifier_form = False
 
+def render_prompt_modifiers_section():
+    st.header('🔧 Prompt Modifier Manager')
+    if render_prompt_modifier_buttons():
+        list_prompt_modifiers()
+    if st.session_state.show_create_modifier_form:
+        create_prompt_modifier()
+    if st.session_state.show_edit_modifier_form:
+        edit_prompt_modifier()
+    if st.session_state.show_delete_modifier_form:
+        delete_prompt_modifier()
 
 def render_prompts_page():
+    initialize_session_state()
     st.title('Manage Prompts')
     render_prompt_section()
     st.markdown("---")
-    render_prompt_modifiers_page()
+    render_prompt_modifiers_section()

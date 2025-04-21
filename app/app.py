@@ -6,10 +6,13 @@ from sqlalchemy.orm import Session
 
 from app.database import get_session
 from app.models import CardDB, PromptDB, PromptModifierDB, WordDB
+from app.cards_generator import generate_multiple_cards
 from app.schemas import (
     CardList,
     CardPublic,
+    CardOutput,
     Cards,
+    GenerateCardsInput,
     Message,
     PromptList,
     PromptModifier,
@@ -74,7 +77,7 @@ def delete_word(word_id: int, session: Session = Depends(get_session)):
 
 # Rota temp. para testar banco de dados:
 
-@app.post('/cards/', status_code=HTTPStatus.CREATED, response_model=CardPublic)
+@app.post('/cards/', status_code=HTTPStatus.CREATED, response_model=Message)
 def create_card(card: Cards, session=Depends(get_session)):
     db_card = session.scalar(select(CardDB).where(CardDB.front_card == card.front_card or CardDB.back_card == card.back_card))
 
@@ -84,8 +87,8 @@ def create_card(card: Cards, session=Depends(get_session)):
             detail='The card already exists'
         )
 
-    db_word = session.scalars(select(WordDB).where(WordDB.word.in_(card.reference_word))).all()
-    if not db_word:
+    db_words = session.scalars(select(WordDB).where(WordDB.word.in_(card.reference_word))).all()
+    if not db_words:
         raise HTTPException(
             status_code=HTTPStatus.BAD_REQUEST,
             detail="At least one reference word must exist"
@@ -102,18 +105,29 @@ def create_card(card: Cards, session=Depends(get_session)):
     db_prompt_modifiers = session.scalars(select(PromptModifierDB).where(PromptModifierDB.id.in_(card.prompt_modifier))).all()
 
     db_card = CardDB(
-    front_card=card.front_card,
-    back_card=card.back_card,
-    prompt=db_prompt,
-    reference_words=db_word,
-    prompt_modifiers=db_prompt_modifiers
+        front_card=card.front_card,
+        back_card=card.back_card,
+        prompt_id = card.prompt_id,
+        reference_words=[],
+        prompt_modifiers=[]
     )
+
+    db_card.reference_words.extend(db_words)
+    db_card.prompt_modifiers.extend(db_prompt_modifiers)
+
+    #db_card = CardDB(
+    #front_card=card.front_card,
+    #back_card=card.back_card,
+    #prompt=db_prompt,
+    #reference_words=db_word,
+    #prompt_modifiers=db_prompt_modifiers
+    #)
 
     session.add(db_card)
     session.commit()
     session.refresh(db_card)
 
-    return db_card
+    return {'message': 'card created'}
 
 
 @app.delete('/cards/{card_id}', response_model=Message)
@@ -276,3 +290,14 @@ def update_prompt_by_id(prompt_modifier_id: int, update_data: PromptModifierUpda
     session.refresh(prompt_modifier)
 
     return {'message': 'The prompt modifier was updated'}
+
+@app.post('/generate-cards/', status_code=HTTPStatus.CREATED, response_model=list[CardOutput])
+def generate_cards(payload: GenerateCardsInput):
+    if not payload.words:
+        raise HTTPException(
+            status_code= HTTPStatus.BAD_REQUEST,
+            detail= 'Empty word list'
+        )
+
+    cards = generate_multiple_cards(payload.words, payload.prompt, payload.modifier)
+    return cards
