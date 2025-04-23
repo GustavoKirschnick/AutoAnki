@@ -23,8 +23,14 @@ class Cards(BaseModel):
     prompt_modifier: list[int]
 
 class CardOutput(BaseModel):
+    words: str
     front: str
     back: str
+    
+class ExportAnki(BaseModel):
+    cards: list[CardOutput]
+    deck: str = None
+    tag: str = None
 
 class GenerateCardsInput(BaseModel):
     words: list[str]

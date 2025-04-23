@@ -1,17 +1,20 @@
 from http import HTTPStatus
 
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi.responses import FileResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.database import get_session
 from app.models import CardDB, PromptDB, PromptModifierDB, WordDB
 from app.cards_generator import generate_multiple_cards
+from app.anki_export import export_to_anki
 from app.schemas import (
     CardList,
     CardPublic,
     CardOutput,
     Cards,
+    ExportAnki,
     GenerateCardsInput,
     Message,
     PromptList,
@@ -300,4 +303,10 @@ def generate_cards(payload: GenerateCardsInput):
         )
 
     cards = generate_multiple_cards(payload.words, payload.prompt, payload.modifier)
+    print(cards)
     return cards
+
+@app.post('/export-cards/')
+def export_cards_to_anki(cards: ExportAnki):
+    path = export_to_anki([card.dict() for card in cards.cards], cards.deck, cards.tag)
+    return FileResponse(path, media_type='application/apkg', filename=path.split('/')[-1])
