@@ -21,11 +21,21 @@ def generate_card_content(word: str, prompt: str, modifiers: list[str] = []) -> 
         )
 
         answer = response.choices[0].message.content.strip()
-        return {'front': word, 'back': answer}
+
+        if 'Front:' in answer and 'Back:' in answer:
+            parts = answer.split('Front:')[1].split('Back:')
+            front = parts[0].strip()
+            back = parts[1].strip()
+        else:
+            front = ''
+            back = answer  
+
+        print(answer)
+        return {'words': word, 'front': front, 'back': back}
     
     except Exception as e:
         print(f'Failure generating the card for {word}: {e}')
-        return {'front': word, 'back': '[Error generating the content]'}
+        return {'words': word, 'front': '', 'back': '[Error generating content]'}
     
 def generate_multiple_cards(words: list[str], prompt: str, modifiers: list[str] = []) -> list[dict]:
     return [generate_card_content(word, prompt, modifiers) for word in words]
