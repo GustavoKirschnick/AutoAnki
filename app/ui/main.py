@@ -1,6 +1,6 @@
 import streamlit as st
-from page_prompts import render_prompts_page, initialize_session_state
 from page_cards import render_cards_page
+from page_prompts import initialize_session_state, render_prompts_page
 
 st.set_page_config(layout="wide")
 

@@ -1,47 +1,22 @@
 from pydantic import BaseModel
 
 
-class Word(BaseModel):
-    word: str
-    type: str
-
-
-class CardPublic(BaseModel):
-    id: int
-    front_card: str
-    back_card: str
-    reference_word: list[str]
-    prompt_id: int
-    prompt_modifier: list[int]
-
-
-class Cards(BaseModel):
-    front_card: str
-    back_card: str
-    reference_word: list[str]
-    prompt_id: int
-    prompt_modifier: list[int]
-
 class CardOutput(BaseModel):
     words: str
     front: str
     back: str
-    
+
+
 class ExportAnki(BaseModel):
     cards: list[CardOutput]
     deck: str = None
     tag: str = None
 
+
 class GenerateCardsInput(BaseModel):
     words: list[str]
     prompt: str
     modifier: list[str]
-
-class WordPublic(BaseModel):
-    id: int
-    word: str
-    type: str
-    cards: list[int]
 
 
 class Prompts(BaseModel):
@@ -55,7 +30,7 @@ class PromptsPublic(BaseModel):
     prompt: str
 
     class Config:
-        orm_mode = True 
+        orm_mode = True
 
 
 class PromptUpdate(BaseModel):
@@ -81,14 +56,6 @@ class PromptModifierUpdate(BaseModel):
 
 class Message(BaseModel):
     message: str
-
-
-class WordList(BaseModel):
-    words: list[WordPublic]
-
-
-class CardList(BaseModel):
-    cards: list[CardPublic]
 
 
 class PromptList(BaseModel):
