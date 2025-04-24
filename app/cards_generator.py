@@ -1,4 +1,5 @@
 import os
+
 import openai
 from dotenv import load_dotenv
 
@@ -6,6 +7,7 @@ load_dotenv()
 
 openai.api_key = os.getenv('GROQ_API_KEY')
 openai.api_base = 'https://api.groq.com/openai/v1'
+
 
 def generate_card_content(word: str, prompt: str, modifiers: list[str] = []) -> dict:
     full_prompt = f'{prompt.strip()}\nWord: {word.strip()}\n' + '\n'.join(modifiers)
@@ -28,14 +30,15 @@ def generate_card_content(word: str, prompt: str, modifiers: list[str] = []) -> 
             back = parts[1].strip()
         else:
             front = ''
-            back = answer  
+            back = answer
 
         print(answer)
         return {'words': word, 'front': front, 'back': back}
-    
+
     except Exception as e:
         print(f'Failure generating the card for {word}: {e}')
         return {'words': word, 'front': '', 'back': '[Error generating content]'}
-    
+
+
 def generate_multiple_cards(words: list[str], prompt: str, modifiers: list[str] = []) -> list[dict]:
     return [generate_card_content(word, prompt, modifiers) for word in words]

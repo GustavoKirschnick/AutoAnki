@@ -1,7 +1,8 @@
-import streamlit as st
 import requests
+import streamlit as st
 
 API_URL = 'http://localhost:8000'
+
 
 def get_prompts():
     response = requests.get(f"{API_URL}/prompts/?limit=50")
@@ -10,12 +11,14 @@ def get_prompts():
         return prompts, {prompt['name']: prompt for prompt in prompts}
     return [], {}
 
+
 def get_prompt_modifiers():
     response = requests.get(f'{API_URL}/prompt-modifiers/?limit=50')
     if response.ok:
         modifiers = response.json().get('prompt_modifiers', [])
         return modifiers, {modifier['name']: modifier for modifier in modifiers}
     return [], {}
+
 
 def render_input_form():
     """Renders the input form"""
@@ -38,7 +41,8 @@ def render_input_form():
 
     return words, selected_prompt_obj, selected_modifier_obj
 
-def generate_cards(words: list[str], prompt_data: dict, modifiers_data: list[dict]) -> list[dict[str,str]]:
+
+def generate_cards(words: list[str], prompt_data: dict, modifiers_data: list[dict]) -> list[dict[str, str]]:
     """Makes the requisition to the API to generate the cards"""
     data = {
         'words': words,
@@ -51,6 +55,7 @@ def generate_cards(words: list[str], prompt_data: dict, modifiers_data: list[dic
     if response.ok:
         return response.json()
     return []
+
 
 def render_generated_cards():
     """Renders the cards generated"""
@@ -74,12 +79,13 @@ def render_generated_cards():
     else:
         st.info('No card was generated yet.')
 
+
 def render_export_button():
     """Renders the anki export button"""
     if st.button('📤 Export Cards to Anki', use_container_width=True):
         print(st.session_state.generated_cards)
         deck = st.session_state.get('deck', '')
-        tag =  st.session_state.get('tag', '')
+        tag = st.session_state.get('tag', '')
 
         export_payload = {
             'cards': st.session_state.generated_cards,
@@ -98,17 +104,20 @@ def render_export_button():
         else:
             st.error('❌ Error exporting the cards.')
 
+
 def render_deck_text_input():
     """Contains the deck input field"""
     deck = st.text_area('Deck')
     st.session_state.deck = deck
     return deck
 
+
 def render_tag_text_input():
     """Contains the tag input field"""
     tag = st.text_area('Tag')
     st.session_state.tag = tag
     return tag
+
 
 def render_cards_page():
     st.title('📇 Flashcards Generator')

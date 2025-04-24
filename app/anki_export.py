@@ -1,6 +1,8 @@
-import genanki
 import random
 from datetime import datetime
+
+import genanki
+
 
 def export_to_anki(cards: list[dict], deck: str = None, tag: str = None, output_dir: str = 'exports') -> str:
     model_id = random.randrange(1 << 30, 1 << 31)
@@ -22,13 +24,13 @@ def export_to_anki(cards: list[dict], deck: str = None, tag: str = None, output_
         ]
     )
 
-    anki_deck  = genanki.Deck(deck_id, deck or 'Default_Deck')
+    anki_deck = genanki.Deck(deck_id, deck or 'Default_Deck')
 
     for card in cards:
         note = genanki.Note(
             model=model,
             fields=[card['front'], card['back']],
-            tags = [tag] if tag else []
+            tags=[tag] if tag else []
         )
         anki_deck.add_note(note)
 
