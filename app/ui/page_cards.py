@@ -3,32 +3,65 @@ import streamlit as st
 
 API_URL = 'http://localhost:8000'
 
-
+@st.cache_data
 def get_prompts():
+    """Retrieves the prompts from the database, adding it to cache"""
     response = requests.get(f"{API_URL}/prompts/?limit=50")
     if response.ok:
         prompts = response.json().get('prompts', [])
         return prompts, {prompt['name']: prompt for prompt in prompts}
     return [], {}
 
-
+@st.cache_data
 def get_prompt_modifiers():
+    """Retrieves the prompt modifiers from the database, adding it to cache"""
     response = requests.get(f'{API_URL}/prompt-modifiers/?limit=50')
     if response.ok:
         modifiers = response.json().get('prompt_modifiers', [])
         return modifiers, {modifier['name']: modifier for modifier in modifiers}
     return [], {}
 
+def initialize_text_areas_keys():
+    """Initializes default values for text areas in session_state"""
+    defaults = {
+        'words': '',
+        'deck': '',
+        'tag': '',
+    }
+    for key, default_value in defaults.items():
+        if key not in st.session_state:
+            st.session_state[key] = default_value
+
+def reset_ptompt_and_modifiers_cache():
+    """Resets the cache"""
+    get_prompts.clear()
+    get_prompt_modifiers.clear()
+
+def render_text_area(label: str, state_key: str):
+    """Generic function to render the text form with session_state"""
+    return st.text_area(
+        label,
+        key = state_key
+    )
+
+def update_text_input(source_key: str, target_key: str):
+    """Generic function that updades the session_state given a key"""
+    st.session_state[target_key] = st.session_state[source_key]
 
 def render_input_form():
     """Renders the input form"""
     st.subheader('🔤 Data input')
 
-    words = st.text_area('Words')
-    words = [w.strip() for w in words.split(',') if w.strip()]
+    render_text_area('Words (comma separated)', 'words')
+    words_text = st.session_state['words']
+    words = [w.strip() for w in words_text.split(',') if w.strip()]
 
-    _, prompt_dict = get_prompts()
-    _, modifier_dict = get_prompt_modifiers()
+    if st.button('🔄 Reload Prompts and Modifiers'):
+        reset_ptompt_and_modifiers_cache()
+
+    with st.spinner('Loading prompts and modifiers...'):
+        _, prompt_dict = get_prompts()
+        _, modifier_dict = get_prompt_modifiers()
 
     prompt_names = list(prompt_dict.keys())
     modifier_names = list(modifier_dict.keys())
@@ -71,9 +104,9 @@ def render_generated_cards():
         with st.container():
             col1, col2, col3 = st.columns([1, 1, 1])
             with col1:
-                render_deck_text_input()
+                render_text_area('Deck', 'deck')
             with col2:
-                render_tag_text_input()
+                render_text_area('Tag', 'tag')
             with col3:
                 render_export_button()
     else:
@@ -83,7 +116,6 @@ def render_generated_cards():
 def render_export_button():
     """Renders the anki export button"""
     if st.button('📤 Export Cards to Anki', use_container_width=True):
-        print(st.session_state.generated_cards)
         deck = st.session_state.get('deck', '')
         tag = st.session_state.get('tag', '')
 
@@ -104,23 +136,10 @@ def render_export_button():
         else:
             st.error('❌ Error exporting the cards.')
 
-
-def render_deck_text_input():
-    """Contains the deck input field"""
-    deck = st.text_area('Deck')
-    st.session_state.deck = deck
-    return deck
-
-
-def render_tag_text_input():
-    """Contains the tag input field"""
-    tag = st.text_area('Tag')
-    st.session_state.tag = tag
-    return tag
-
-
 def render_cards_page():
     st.title('📇 Flashcards Generator')
+
+    initialize_text_areas_keys()
 
     col1, col2 = st.columns([1, 2])
 
