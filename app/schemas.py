@@ -2,7 +2,7 @@ from pydantic import BaseModel
 
 
 class CardOutput(BaseModel):
-    words: str
+    word: str
     front: str
     back: str
 

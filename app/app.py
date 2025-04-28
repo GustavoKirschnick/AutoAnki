@@ -5,8 +5,9 @@ from fastapi.responses import FileResponse
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.anki_export import export_to_anki
-from app.cards_generator import generate_multiple_cards
+from app.anki_export import AnkiExporter
+from app.card import Card
+from app.cards_generator import CardGenerator
 from app.database import get_session
 from app.models import PromptDB, PromptModifierDB
 from app.schemas import (
@@ -181,14 +182,30 @@ def generate_cards(payload: GenerateCardsInput):
             detail='Empty word list'
         )
 
-    cards = generate_multiple_cards(payload.words, payload.prompt, payload.modifier)
+    card_generator = CardGenerator()
+    cards: list[Card] =  card_generator.generate_cards(payload.words, payload.prompt, payload.modifier)
     print(cards)
-    return cards
+    return [
+        CardOutput(
+            word = card.word,
+            front = card.front,
+            back = card.back
+        )
+        for card in cards
+    ]
 
 
 @card_router.post('/export-cards/')
 def export_cards_to_anki(cards: ExportAnki):
-    path = export_to_anki([card.dict() for card in cards.cards], cards.deck, cards.tag)
+    anki_exporter = AnkiExporter(
+        deck_name=cards.deck,
+        tag=cards.tag,      
+    )
+
+    card_data = [{'front': card.front, 'back': card.back} for card in cards.cards]
+    anki_exporter.create_cards(card_data)
+    path = anki_exporter.export()
+
     return FileResponse(path, media_type='application/apkg', filename=path.split('/')[-1])
 
 
