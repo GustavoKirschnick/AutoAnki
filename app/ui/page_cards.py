@@ -96,7 +96,7 @@ def render_generated_cards():
         for i, card in enumerate(st.session_state.generated_cards):
             with st.container():
                 st.markdown(f"**Card {i + 1}**")
-                st.markdown(f"**Word:** {card['words']}")
+                st.markdown(f"**Word:** {card['word']}")
                 st.markdown(f"**Front:** {card['front']}")
                 st.markdown(f"**Back:** {card['back']}")
                 st.divider()
