@@ -37,7 +37,7 @@ def create_prompt(prompt: Prompts, session: Session = Depends(get_session)):
 
     if db_prompt:
         raise HTTPException(
-            detail=f'There is already a prompt with the name of {db_prompt.name}'
+            status_code=HTTPStatus.BAD_REQUEST, detail=f'There is already a prompt with the name of {db_prompt.name}'
         )
 
     db_prompt = PromptDB(name=prompt.name, prompt=prompt.prompt)
@@ -54,7 +54,7 @@ def delete_prompt(prompt_id: int, session: Session = Depends(get_session)):
 
     if not db_prompt:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail='Prompt not found'
+            status_code=HTTPStatus.NOT_FOUND, detail=f'Prompt with id {prompt_id} not found'
         )
 
     session.delete(db_prompt)
@@ -108,7 +108,7 @@ def create_prompt_modifier(prompt_modifier: PromptModifier, session: Session = D
 
     if db_prompt_modifier:
         raise HTTPException(
-            detail=f'There is already a prompt modifier with the name of {db_prompt_modifier.name}'
+             status_code=HTTPStatus.BAD_REQUEST, detail=f'There is already a prompt modifier with the name of {db_prompt_modifier.name}'
         )
 
     db_prompt_modifier = PromptModifierDB(name=prompt_modifier.name, prompt=prompt_modifier.prompt)
@@ -125,7 +125,7 @@ def delete_prompt_modifier(prompt_modifier_id: int, session: Session = Depends(g
 
     if not db_prompt_modifier:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail='Prompt modifier not found'
+            status_code=HTTPStatus.NOT_FOUND, detail=f'Prompt modifier with id {prompt_modifier_id} not found'
         )
 
     session.delete(db_prompt_modifier)
@@ -197,17 +197,20 @@ def generate_cards(payload: GenerateCardsInput):
 
 @card_router.post('/export-cards/')
 def export_cards_to_anki(cards: ExportAnki):
-    anki_exporter = AnkiExporter(
-        deck_name=cards.deck,
-        tag=cards.tag,      
-    )
+    try:
+        anki_exporter = AnkiExporter(
+            deck_name=cards.deck,
+            tag=cards.tag,      
+        )
 
-    card_data = [{'front': card.front, 'back': card.back} for card in cards.cards]
-    anki_exporter.create_cards(card_data)
-    path = anki_exporter.export()
+        card_data = [{'front': card.front, 'back': card.back} for card in cards.cards]
+        anki_exporter.create_cards(card_data)
+        path = anki_exporter.export()
 
-    return FileResponse(path, media_type='application/apkg', filename=path.split('/')[-1])
-
+        return FileResponse(path, media_type='application/apkg', filename=path.split('/')[-1])
+    
+    except Exception as e:
+        raise HTTPException(status_code=HTTPStatus.INTERNAL_SERVER_ERROR, detail= f'{e}')
 
 app.include_router(prompts_router)
 app.include_router(prompt_modifier_router)

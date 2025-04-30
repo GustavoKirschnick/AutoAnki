@@ -35,8 +35,3 @@ def session():
         yield session
 
     table_registry.metadata.drop_all(engine)
-
-
-@pytest.fixture
-def word():
-    pass
