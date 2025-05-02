@@ -1,7 +1,9 @@
+import os
 import random
 from datetime import datetime
-import os
+
 import genanki
+
 
 class AnkiExporter:
     def __init__(self, deck_name: str = 'Default Deck', tag: str = None, output_dir: str = 'exports'):
@@ -12,7 +14,7 @@ class AnkiExporter:
         self.deck_id = random.randrange(1 << 30, 1 << 31)
         self.model = self._create_model()
         self.deck = self._create_deck()
-        
+
     def _create_model(self):
         """Creates the Anki card model"""
         return genanki.Model(
@@ -30,7 +32,7 @@ class AnkiExporter:
                 },
             ]
         )
-    
+
     def _create_deck(self):
         """Creates the Anki deck with a given name"""
         return genanki.Deck(self.deck_id, self.deck_name)

@@ -7,13 +7,10 @@ class Card:
 
     def __repr__(self) -> str:
         return f'Card(word: {self.word}), front: {self.front} back: {self.back}'
-    
-    def to_dict(self) -> dict: 
+
+    def to_dict(self) -> dict:
         return {
             'word': self.word,
             'front': self.front,
             'back': self.back
         }
-
-    
-

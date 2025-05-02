@@ -1,14 +1,15 @@
 from http import HTTPStatus
-from app.card import Card
 from pathlib import Path
+
+from app.core.card import Card
 
 
 def test_create_valid_card(monkeypatch, client):
-    
+
     def mock_generate_cards(self, words, prompt, modifiers):
         return [Card(word=w, front=f'Front of {w}', back=f'Back of {w}') for w in words]
 
-    monkeypatch.setattr('app.app.CardGenerator.generate_cards', mock_generate_cards)
+    monkeypatch.setattr('app.routers.card.CardGenerator.generate_cards', mock_generate_cards)
 
     payload = {'words': ['Beobachten'], 'prompt': 'Create a sentence', 'modifier': ['Use the Konjuntiv 2']}
 
@@ -29,6 +30,7 @@ def test_create_invalid_card(client):
     assert create_response.status_code == HTTPStatus.BAD_REQUEST
     assert create_response.json()['detail'] == 'Empty word list'
 
+
 def test_export_valid_card(monkeypatch, client):
     dummy_file_path = 'exports/test_deck_20250430120000.apkg'
 
@@ -39,14 +41,14 @@ def test_export_valid_card(monkeypatch, client):
             self.output_dir = output_dir
 
         def create_cards(self, cards):
-            pass  
+            pass
 
         def export(self):
             Path(self.output_dir).mkdir(parents=True, exist_ok=True)
             Path(dummy_file_path).write_text('Fake .apkg content')
             return dummy_file_path
 
-    monkeypatch.setattr('app.app.AnkiExporter', MockAnkiExporter)
+    monkeypatch.setattr('app.routers.card.AnkiExporter', MockAnkiExporter)
 
     payload = {
         'deck': 'Test Deck',
@@ -62,21 +64,23 @@ def test_export_valid_card(monkeypatch, client):
     assert response.headers['content-type'] == 'application/apkg'
     assert response.headers['content-disposition'].endswith('.apkg"')
 
-    #Deletes the test file
+    # Deletes the test file
     Path(dummy_file_path).unlink()
+
 
 def test_export_invalid_payload(client):
     invalid_payload = {
         'deck': 'DeckName',
         'tag': 'TagDeck',
         'cards': [
-            {'word': 'Beobachten', 'front': 'Er wird beobachtet'} 
+            {'word': 'Beobachten', 'front': 'Er wird beobachtet'}
         ]
     }
 
     response = client.post('/export-cards/', json=invalid_payload)
 
     assert response.status_code == HTTPStatus.UNPROCESSABLE_ENTITY
+
 
 def test_export_cards_internal_error(monkeypatch, client):
     class MockAnkiExporter:
@@ -86,12 +90,12 @@ def test_export_cards_internal_error(monkeypatch, client):
             self.output_dir = output_dir
 
         def create_cards(self, cards):
-            pass  
+            pass
 
         def export(self):
             raise Exception('Simulated error in the exporting')
 
-    monkeypatch.setattr('app.app.AnkiExporter', MockAnkiExporter)
+    monkeypatch.setattr('app.routers.card.AnkiExporter', MockAnkiExporter)
 
     payload = {
         'deck': 'TestDeck',

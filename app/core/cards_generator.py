@@ -2,7 +2,8 @@ import os
 
 import openai
 from dotenv import load_dotenv
-from app.card import Card
+
+from app.core.card import Card
 
 load_dotenv()
 
@@ -29,7 +30,7 @@ class CardGenerator:
         )
 
         return response.choices[0].message.content.strip()
-    
+
     def _parse_answer(self, answer: str, word: str) -> Card:
         if 'Front:' in answer and 'Back:' in answer:
             parts = answer.split('Front:')[1].split('Back:')
@@ -40,16 +41,16 @@ class CardGenerator:
             back = answer
 
         return Card(word=word, front=front, back=back)
-    
+
     def generate_card(self, word: str, prompt: str, modifiers: list[str] = []) -> Card:
         full_prompt = self._get_prompt(word, prompt, modifiers)
 
-        try: 
+        try:
             answer = self._call_api(full_prompt)
             return self._parse_answer(answer, word)
         except Exception as e:
             print(f'Error generating the card content for the word {word}: {e}')
             return Card(word, front='', back='Error generating the content')
-        
+
     def generate_cards(self, words: list[str], prompt: str, modifiers: list[str] = []) -> list[Card]:
         return [self.generate_card(word, prompt, modifiers) for word in words]
