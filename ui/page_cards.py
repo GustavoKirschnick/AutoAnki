@@ -3,6 +3,7 @@ import streamlit as st
 
 API_URL = 'http://localhost:8000'
 
+
 @st.cache_data
 def get_prompts():
     """Retrieves the prompts from the database, adding it to cache"""
@@ -12,6 +13,7 @@ def get_prompts():
         return prompts, {prompt['name']: prompt for prompt in prompts}
     return [], {}
 
+
 @st.cache_data
 def get_prompt_modifiers():
     """Retrieves the prompt modifiers from the database, adding it to cache"""
@@ -20,6 +22,7 @@ def get_prompt_modifiers():
         modifiers = response.json().get('prompt_modifiers', [])
         return modifiers, {modifier['name']: modifier for modifier in modifiers}
     return [], {}
+
 
 def initialize_text_areas_keys():
     """Initializes default values for text areas in session_state"""
@@ -32,21 +35,25 @@ def initialize_text_areas_keys():
         if key not in st.session_state:
             st.session_state[key] = default_value
 
+
 def reset_ptompt_and_modifiers_cache():
     """Resets the cache"""
     get_prompts.clear()
     get_prompt_modifiers.clear()
 
+
 def render_text_area(label: str, state_key: str):
     """Generic function to render the text form with session_state"""
     return st.text_area(
         label,
-        key = state_key
+        key=state_key
     )
+
 
 def update_text_input(source_key: str, target_key: str):
     """Generic function that updades the session_state given a key"""
     st.session_state[target_key] = st.session_state[source_key]
+
 
 def render_input_form():
     """Renders the input form"""
@@ -135,6 +142,7 @@ def render_export_button():
             st.session_state.generated_cards = []  # Clear cards after export
         else:
             st.error('❌ Error exporting the cards.')
+
 
 def render_cards_page():
     st.title('📇 Flashcards Generator')

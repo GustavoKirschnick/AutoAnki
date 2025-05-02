@@ -160,47 +160,47 @@ def list_prompt_modifiers():
 def create_prompt_modifier():
     """Creates a prompt modifier given an id"""
     with st.expander('➕ New Prompt Modifier', expanded=True):
-            name, prompt = prompt_modifier_form()
-            if st.button('💾 Save new prompt modifier', key='save_new_prompt_modifier_button'):
-                response = requests.post(f'{API_URL}/prompt-modifiers', json={"name": name, "prompt": prompt})
-                if response.ok:
-                    st.success('✅ Prompt modifier was sucessfully created')
-                    st.session_state.show_create_modifier_form = False
-                else:
-                    st.error('❌ Error creating the prompt modifier')
+        name, prompt = prompt_modifier_form()
+        if st.button('💾 Save new prompt modifier', key='save_new_prompt_modifier_button'):
+            response = requests.post(f'{API_URL}/prompt-modifiers', json={"name": name, "prompt": prompt})
+            if response.ok:
+                st.success('✅ Prompt modifier was sucessfully created')
+                st.session_state.show_create_modifier_form = False
+            else:
+                st.error('❌ Error creating the prompt modifier')
 
 
 def edit_prompt_modifier():
     """Edits a prompt modifier given an id"""
     with st.expander('✏️ Edit Prompt Modifier', expanded=True):
-            prompt_modifier_id = st.text_input('Prompt modifier ID to edit', key='edit_prompt_modifier_id_input')
-            if prompt_modifier_id:
-                response = requests.get(f'{API_URL}/prompt-modifiers/{prompt_modifier_id}')
-                if response.ok:
-                    name, prompt = prompt_modifier_form(response.json())
-                    if st.button('💾 Save changes', key='save_edit_prompt_modifier_button'):
-                        update = {'name': name, 'prompt': prompt}
-                        response = requests.put(f'{API_URL}/prompt-modifiers/{prompt_modifier_id}', json=update)
-                        if response.ok:
-                            st.success('✅ Prompt modifier updated!')
-                            st.session_state.show_edit_modifier_form = False
-                        else:
-                            st.error('❌ Error updating prompt modifier')
-                else:
-                    st.error('❌ Prompt modifier was not found')
+        prompt_modifier_id = st.text_input('Prompt modifier ID to edit', key='edit_prompt_modifier_id_input')
+        if prompt_modifier_id:
+            response = requests.get(f'{API_URL}/prompt-modifiers/{prompt_modifier_id}')
+            if response.ok:
+                name, prompt = prompt_modifier_form(response.json())
+                if st.button('💾 Save changes', key='save_edit_prompt_modifier_button'):
+                    update = {'name': name, 'prompt': prompt}
+                    response = requests.put(f'{API_URL}/prompt-modifiers/{prompt_modifier_id}', json=update)
+                    if response.ok:
+                        st.success('✅ Prompt modifier updated!')
+                        st.session_state.show_edit_modifier_form = False
+                    else:
+                        st.error('❌ Error updating prompt modifier')
+            else:
+                st.error('❌ Prompt modifier was not found')
 
 
 def delete_prompt_modifier():
     """Deletes a prompt modifier given an id"""
     with st.expander('🗑️ Delete Prompt Modifier', expanded=True):
-            prompt_modifier_id = st.text_input('Prompt modifier ID to delete', key='delete_prompt_modifier_id_input')
-            if st.button('🚨 Confirm exclusion', key='confirm_delete_prompt_modifier_button'):
-                response = requests.delete(f'{API_URL}/prompt-modifiers/{prompt_modifier_id}')
-                if response.ok:
-                    st.success('✅ Prompt modifier deleted')
-                else:
-                    st.error('❌ Error deleting the prompt modifier')
-                st.session_state.show_delete_modifier_form = False
+        prompt_modifier_id = st.text_input('Prompt modifier ID to delete', key='delete_prompt_modifier_id_input')
+        if st.button('🚨 Confirm exclusion', key='confirm_delete_prompt_modifier_button'):
+            response = requests.delete(f'{API_URL}/prompt-modifiers/{prompt_modifier_id}')
+            if response.ok:
+                st.success('✅ Prompt modifier deleted')
+            else:
+                st.error('❌ Error deleting the prompt modifier')
+            st.session_state.show_delete_modifier_form = False
 
 
 def render_prompt_modifiers_section():
