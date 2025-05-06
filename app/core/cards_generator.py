@@ -13,7 +13,7 @@ openai.api_base = 'https://api.groq.com/openai/v1'
 
 class CardGenerator:
 
-    def __init__(self, model: str = 'llama-3.3-70b-versatile'):
+    def __init__(self, model: str = 'llama-3.3-70b-versatile'):  # It is recommended to use the 'llama-3.3-70b-versatile' model.
         self.model = model
 
     def _get_prompt(self, word: str, prompt: str, modifiers: list[str]) -> str:
