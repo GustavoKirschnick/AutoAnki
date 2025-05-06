@@ -12,8 +12,8 @@ openai.api_base = 'https://api.groq.com/openai/v1'
 
 
 class CardGenerator:
-
-    def __init__(self, model: str = 'llama-3.3-70b-versatile'):  # It is recommended to use the 'llama-3.3-70b-versatile' model.
+    def __init__(self, model: str = 'llama-3.3-70b-versatile'):
+        # It is recommended to use the 'llama-3.3-70b-versatile' model.
         self.model = model
 
     def _get_prompt(self, word: str, prompt: str, modifiers: list[str]) -> str:
@@ -23,8 +23,13 @@ class CardGenerator:
         response = openai.ChatCompletion.create(
             model='llama-3.3-70b-versatile',
             messages=[
-                {'role': 'system', 'content': 'You are an assisstant that creates flashcards for language learning study.'},
-                {'role': 'user', 'content': full_prompt}
+                {
+                    'role': 'system',
+                    'content': (
+                        'You are an assisstant that creates flashcards for language learning study.'
+                    ),
+                },
+                {'role': 'user', 'content': full_prompt},
             ],
             temperature=0.7,
         )
@@ -52,5 +57,7 @@ class CardGenerator:
             print(f'Error generating the card content for the word {word}: {e}')
             return Card(word, front='', back='Error generating the content')
 
-    def generate_cards(self, words: list[str], prompt: str, modifiers: list[str] = []) -> list[Card]:
+    def generate_cards(
+        self, words: list[str], prompt: str, modifiers: list[str] = []
+    ) -> list[Card]:
         return [self.generate_card(word, prompt, modifiers) for word in words]

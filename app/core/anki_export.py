@@ -6,7 +6,9 @@ import genanki
 
 
 class AnkiExporter:
-    def __init__(self, deck_name: str = 'Default Deck', tag: str = None, output_dir: str = 'exports'):
+    def __init__(
+        self, deck_name: str = 'Default Deck', tag: str = None, output_dir: str = 'exports'
+    ):
         self.deck_name = deck_name
         self.tag = tag
         self.output_dir = output_dir
@@ -30,7 +32,7 @@ class AnkiExporter:
                     'qfmt': '{{Front}}',
                     'afmt': '{{Front}}<hr id="answer">{{Back}}',
                 },
-            ]
+            ],
         )
 
     def _create_deck(self):
@@ -40,9 +42,7 @@ class AnkiExporter:
     def create_card(self, front: str, back: str):
         """Creates a card in the deck"""
         note = genanki.Note(
-            model=self.model,
-            fields=[front, back],
-            tags=[self.tag] if self.tag else []
+            model=self.model, fields=[front, back], tags=[self.tag] if self.tag else []
         )
 
         self.deck.add_note(note)
@@ -55,7 +55,9 @@ class AnkiExporter:
     def export(self):
         """Exports the created Deck to .apkg"""
         os.makedirs(self.output_dir, exist_ok=True)
-        filename = f'{self.deck_name.replace(' ', '_')}_{datetime.now().strftime('%Y%m%d%H%M%S')}.apkg'
+        filename = (
+            f'{self.deck_name.replace(" ", "_")}_{datetime.now().strftime("%Y%m%d%H%M%S")}.apkg'
+        )
         path = os.path.join(self.output_dir, filename)
         genanki.Package(self.deck).write_to_file(path)
         return path

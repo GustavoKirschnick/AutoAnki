@@ -5,22 +5,25 @@ from app.core.card import Card
 
 
 def test_create_valid_card(monkeypatch, client):
-
     def mock_generate_cards(self, words, prompt, modifiers):
         return [Card(word=w, front=f'Front of {w}', back=f'Back of {w}') for w in words]
 
     monkeypatch.setattr('app.routers.card.CardGenerator.generate_cards', mock_generate_cards)
 
-    payload = {'words': ['Beobachten'], 'prompt': 'Create a sentence', 'modifier': ['Use the Konjuntiv 2']}
+    payload = {
+        'words': ['Beobachten'],
+        'prompt': 'Create a sentence',
+        'modifier': ['Use the Konjuntiv 2'],
+    }
 
     response = client.post('/generate-cards/', json=payload)
 
     assert response.status_code == HTTPStatus.CREATED
     data = response.json()
     assert len(data) == 1
-    assert data[0]['word'] == "Beobachten"
-    assert data[0]['front'] == "Front of Beobachten"
-    assert data[0]['back'] == "Back of Beobachten"
+    assert data[0]['word'] == 'Beobachten'
+    assert data[0]['front'] == 'Front of Beobachten'
+    assert data[0]['back'] == 'Back of Beobachten'
 
 
 def test_create_invalid_card(client):
@@ -55,7 +58,7 @@ def test_export_valid_card(monkeypatch, client):
         'tag': 'test_tag',
         'cards': [
             {'word': 'Beobachten', 'front': 'Front of Beobachten', 'back': 'Back of Beobachten'}
-        ]
+        ],
     }
 
     response = client.post('/export-cards/', json=payload)
@@ -72,9 +75,7 @@ def test_export_invalid_payload(client):
     invalid_payload = {
         'deck': 'DeckName',
         'tag': 'TagDeck',
-        'cards': [
-            {'word': 'Beobachten', 'front': 'Er wird beobachtet'}
-        ]
+        'cards': [{'word': 'Beobachten', 'front': 'Er wird beobachtet'}],
     }
 
     response = client.post('/export-cards/', json=invalid_payload)
@@ -100,7 +101,13 @@ def test_export_cards_internal_error(monkeypatch, client):
     payload = {
         'deck': 'TestDeck',
         'tag': 'TestTag',
-        'cards': [{'word': 'Beobachten', 'front': 'Er wird beobachtet', 'back': 'He is being watched'}]
+        'cards': [
+            {
+                'word': 'Beobachten',
+                'front': 'Er wird beobachtet',
+                'back': 'He is being watched',
+            }
+        ],
     }
 
     response = client.post('/export-cards/', json=payload)

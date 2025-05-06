@@ -6,7 +6,11 @@ def test_create_prompt_valid(client):
 
     response = client.post('/prompts/', json=payload)
     assert response.status_code == HTTPStatus.CREATED
-    assert response.json() == {'name': 'CreatePhrase', 'prompt': 'Create a phrase with the following word', 'id': 1}
+    assert response.json() == {
+        'name': 'CreatePhrase',
+        'prompt': 'Create a phrase with the following word',
+        'id': 1,
+    }
 
 
 def test_create_prompt_repeated_name(client):
@@ -17,7 +21,9 @@ def test_create_prompt_repeated_name(client):
 
     second_response = client.post('/prompts/', json=payload)
     assert second_response.status_code == HTTPStatus.BAD_REQUEST
-    assert second_response.json()['detail'] == 'There is already a prompt with the name of RepeatedName'
+    assert second_response.json()['detail'] == (
+        'There is already a prompt with the name of RepeatedName'
+    )
 
 
 def test_delete_prompt_valid(client):

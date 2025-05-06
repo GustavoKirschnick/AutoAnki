@@ -17,13 +17,20 @@ from app.schemas import (
 prompt_modifiers_router = APIRouter(prefix='/prompt-modifiers', tags=['Prompt Modifiers'])
 
 
-@prompt_modifiers_router.post('/', status_code=HTTPStatus.CREATED, response_model=PromptModifierPublic)
-def create_prompt_modifier(prompt_modifier: PromptModifier, session: Session = Depends(get_session)):
-    db_prompt_modifier = session.scalar(select(PromptModifierDB).where(PromptModifierDB.name == prompt_modifier.name))
+@prompt_modifiers_router.post(
+    '/', status_code=HTTPStatus.CREATED, response_model=PromptModifierPublic
+)
+def create_prompt_modifier(
+    prompt_modifier: PromptModifier, session: Session = Depends(get_session)
+):
+    db_prompt_modifier = session.scalar(
+        select(PromptModifierDB).where(PromptModifierDB.name == prompt_modifier.name)
+    )
 
     if db_prompt_modifier:
         raise HTTPException(
-             status_code=HTTPStatus.BAD_REQUEST, detail=f'There is already a prompt modifier with the name of {db_prompt_modifier.name}'
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail=f'There is already a prompt modifier with the name of {db_prompt_modifier.name}',
         )
 
     db_prompt_modifier = PromptModifierDB(name=prompt_modifier.name, prompt=prompt_modifier.prompt)
@@ -36,11 +43,14 @@ def create_prompt_modifier(prompt_modifier: PromptModifier, session: Session = D
 
 @prompt_modifiers_router.delete('/{prompt_modifier_id}', response_model=Message)
 def delete_prompt_modifier(prompt_modifier_id: int, session: Session = Depends(get_session)):
-    db_prompt_modifier = session.scalar(select(PromptModifierDB).where(PromptModifierDB.id == prompt_modifier_id))
+    db_prompt_modifier = session.scalar(
+        select(PromptModifierDB).where(PromptModifierDB.id == prompt_modifier_id)
+    )
 
     if not db_prompt_modifier:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail=f'Prompt modifier with id {prompt_modifier_id} not found'
+            status_code=HTTPStatus.NOT_FOUND,
+            detail=f'Prompt modifier with id {prompt_modifier_id} not found',
         )
 
     session.delete(db_prompt_modifier)
@@ -58,24 +68,35 @@ def get_prompt_modifiers(limit: int = 10, session: Session = Depends(get_session
 
 @prompt_modifiers_router.get('/{prompt_modifier_id}', response_model=PromptModifierPublic)
 def get_prompt_by_id(prompt_modifier_id: int, session: Session = Depends(get_session)):
-    prompt_modifier = session.scalar(select(PromptModifierDB).where(PromptModifierDB.id == prompt_modifier_id))
+    prompt_modifier = session.scalar(
+        select(PromptModifierDB).where(PromptModifierDB.id == prompt_modifier_id)
+    )
 
     if not prompt_modifier:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND, detail=f'Prompt modifier with id {prompt_modifier_id} not found'
+            status_code=HTTPStatus.NOT_FOUND,
+            detail=f'Prompt modifier with id {prompt_modifier_id} not found',
         )
 
     return prompt_modifier
 
 
-@prompt_modifiers_router.put('/{prompt_modifier_id}', status_code=HTTPStatus.OK, response_model=Message)
-def update_prompt_by_id(prompt_modifier_id: int, update_data: PromptModifierUpdate, session: Session = Depends(get_session)):
-    prompt_modifier = session.scalar(select(PromptModifierDB).where(PromptModifierDB.id == prompt_modifier_id))
+@prompt_modifiers_router.put(
+    '/{prompt_modifier_id}', status_code=HTTPStatus.OK, response_model=Message
+)
+def update_prompt_by_id(
+    prompt_modifier_id: int,
+    update_data: PromptModifierUpdate,
+    session: Session = Depends(get_session),
+):
+    prompt_modifier = session.scalar(
+        select(PromptModifierDB).where(PromptModifierDB.id == prompt_modifier_id)
+    )
 
     if not prompt_modifier:
         raise HTTPException(
             status_code=HTTPStatus.NOT_FOUND,
-            detail=f'Prompt modifier with id {prompt_modifier_id} not found'
+            detail=f'Prompt modifier with id {prompt_modifier_id} not found',
         )
 
     prompt_modifier.name = update_data.name
