@@ -7,7 +7,7 @@ API_URL = 'http://localhost:8000'
 @st.cache_data
 def get_prompts():
     """Retrieves the prompts from the database, adding it to cache"""
-    response = requests.get(f"{API_URL}/prompts/?limit=50")
+    response = requests.get(f'{API_URL}/prompts/?limit=50')
     if response.ok:
         prompts = response.json().get('prompts', [])
         return prompts, {prompt['name']: prompt for prompt in prompts}
@@ -44,10 +44,7 @@ def reset_ptompt_and_modifiers_cache():
 
 def render_text_area(label: str, state_key: str):
     """Generic function to render the text form with session_state"""
-    return st.text_area(
-        label,
-        key=state_key
-    )
+    return st.text_area(label, key=state_key)
 
 
 def update_text_input(source_key: str, target_key: str):
@@ -82,12 +79,16 @@ def render_input_form():
     return words, selected_prompt_obj, selected_modifier_obj
 
 
-def generate_cards(words: list[str], prompt_data: dict, modifiers_data: list[dict]) -> list[dict[str, str]]:
+def generate_cards(
+    words: list[str],
+    prompt_data: dict,
+    modifiers_data: list[dict],
+) -> list[dict[str, str]]:
     """Makes the requisition to the API to generate the cards"""
     data = {
         'words': words,
         'prompt': prompt_data['prompt'],
-        'modifier': [modifier['prompt'] for modifier in modifiers_data] if modifiers_data else []
+        'modifier': [modifier['prompt'] for modifier in modifiers_data] if modifiers_data else [],
     }
 
     response = requests.post(f'{API_URL}/generate-cards/', json=data)
@@ -102,10 +103,10 @@ def render_generated_cards():
     if 'generated_cards' in st.session_state and st.session_state.generated_cards:
         for i, card in enumerate(st.session_state.generated_cards):
             with st.container():
-                st.markdown(f"**Card {i + 1}**")
-                st.markdown(f"**Word:** {card['word']}")
-                st.markdown(f"**Front:** {card['front']}")
-                st.markdown(f"**Back:** {card['back']}")
+                st.markdown(f'**Card {i + 1}**')
+                st.markdown(f'**Word:** {card["word"]}')
+                st.markdown(f'**Front:** {card["front"]}')
+                st.markdown(f'**Back:** {card["back"]}')
                 st.divider()
 
         with st.container():
@@ -126,16 +127,9 @@ def render_export_button():
         deck = st.session_state.get('deck', '')
         tag = st.session_state.get('tag', '')
 
-        export_payload = {
-            'cards': st.session_state.generated_cards,
-            'deck': deck,
-            'tag': tag
-        }
+        export_payload = {'cards': st.session_state.generated_cards, 'deck': deck, 'tag': tag}
 
-        export_response = requests.post(
-            f'{API_URL}/export-cards/',
-            json=export_payload
-        )
+        export_response = requests.post(f'{API_URL}/export-cards/', json=export_payload)
 
         if export_response.ok:
             st.success('✅ Cards successfully exported.')

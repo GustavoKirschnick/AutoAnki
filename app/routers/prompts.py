@@ -23,7 +23,8 @@ def create_prompt(prompt: Prompts, session: Session = Depends(get_session)):
 
     if db_prompt:
         raise HTTPException(
-            status_code=HTTPStatus.BAD_REQUEST, detail=f'There is already a prompt with the name of {db_prompt.name}'
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail=f'There is already a prompt with the name of {db_prompt.name}',
         )
 
     db_prompt = PromptDB(name=prompt.name, prompt=prompt.prompt)
@@ -68,13 +69,14 @@ def get_prompt_by_id(prompt_id: int, session: Session = Depends(get_session)):
 
 
 @prompts_router.put('/{prompt_id}', status_code=HTTPStatus.OK, response_model=Message)
-def update_prompt_by_id(prompt_id: int, update_data: PromptUpdate, session: Session = Depends(get_session)):
+def update_prompt_by_id(
+    prompt_id: int, update_data: PromptUpdate, session: Session = Depends(get_session)
+):
     prompt = session.scalar(select(PromptDB).where(PromptDB.id == prompt_id))
 
     if not prompt:
         raise HTTPException(
-            status_code=HTTPStatus.NOT_FOUND,
-            detail=f'Prompt with id {prompt_id} not found'
+            status_code=HTTPStatus.NOT_FOUND, detail=f'Prompt with id {prompt_id} not found'
         )
 
     prompt.name = update_data.name

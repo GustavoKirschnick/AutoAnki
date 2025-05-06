@@ -6,7 +6,11 @@ def test_create_prompt_modifier_valid(client):
 
     response = client.post('/prompt-modifiers/', json=payload)
     assert response.status_code == HTTPStatus.CREATED
-    assert response.json() == {'name': 'PhraseWithKonjuntiv2', 'prompt': 'Create a phrase in the konjuntiv 2', 'id': 1}
+    assert response.json() == {
+        'name': 'PhraseWithKonjuntiv2',
+        'prompt': 'Create a phrase in the konjuntiv 2',
+        'id': 1,
+    }
 
 
 def test_create_prompt_modifier_repeated_name(client):
@@ -17,7 +21,9 @@ def test_create_prompt_modifier_repeated_name(client):
 
     second_response = client.post('/prompt-modifiers/', json=payload)
     assert second_response.status_code == HTTPStatus.BAD_REQUEST
-    assert second_response.json()['detail'] == 'There is already a prompt modifier with the name of RepeatedName'
+    assert second_response.json()['detail'] == (
+        'There is already a prompt modifier with the name of RepeatedName'
+    )
 
 
 def test_delete_prompt_modifier_valid(client):
@@ -33,7 +39,9 @@ def test_delete_prompt_modifier_valid(client):
 
     get_response = client.get(f'/prompt-modifiers/{prompt_modifier_id}')
     assert get_response.status_code == HTTPStatus.NOT_FOUND
-    assert get_response.json()['detail'] == f'Prompt modifier with id {prompt_modifier_id} not found'
+    assert get_response.json()['detail'] == (
+        f'Prompt modifier with id {prompt_modifier_id} not found'
+    )
 
 
 def test_delete_prompt_modifier_wrong_id(client):

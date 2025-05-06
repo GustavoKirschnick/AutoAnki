@@ -11,25 +11,19 @@ from app.schemas import CardOutput, ExportAnki, GenerateCardsInput
 card_router = APIRouter(tags=['Cards'])
 
 
-@card_router.post('/generate-cards/', status_code=HTTPStatus.CREATED, response_model=list[CardOutput])
+@card_router.post(
+    '/generate-cards/', status_code=HTTPStatus.CREATED, response_model=list[CardOutput]
+)
 def generate_cards(payload: GenerateCardsInput):
     if not payload.words:
-        raise HTTPException(
-            status_code=HTTPStatus.BAD_REQUEST,
-            detail='Empty word list'
-        )
+        raise HTTPException(status_code=HTTPStatus.BAD_REQUEST, detail='Empty word list')
 
     card_generator = CardGenerator()
-    cards: list[Card] = card_generator.generate_cards(payload.words, payload.prompt, payload.modifier)
-    print(cards)
-    return [
-        CardOutput(
-            word=card.word,
-            front=card.front,
-            back=card.back
-        )
-        for card in cards
-    ]
+    cards: list[Card] = card_generator.generate_cards(
+        payload.words, payload.prompt, payload.modifier
+    )
+
+    return [CardOutput(word=card.word, front=card.front, back=card.back) for card in cards]
 
 
 @card_router.post('/export-cards/')
