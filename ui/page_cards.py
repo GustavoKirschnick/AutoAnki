@@ -78,6 +78,10 @@ def render_input_form():
         _, prompt_dict = get_prompts()
         _, modifier_dict = get_prompt_modifiers()
 
+    if not prompt_dict:
+        st.warning('No prompts found. Please create at least one prompt before generating cards.')
+        st.stop()
+    
     prompt_names = list(prompt_dict.keys())
     modifier_names = list(modifier_dict.keys())
 
