@@ -42,9 +42,20 @@ def reset_ptompt_and_modifiers_cache():
     get_prompt_modifiers.clear()
 
 
-def render_text_area(label: str, state_key: str):
-    """Generic function to render the text form with session_state"""
-    return st.text_area(label, key=state_key)
+def render_text_area(label: str, state_key: str, allow_space: bool = True):
+    """Generic function to render the text form with session_state
+    If allow_space is False, spaces are removed automatically.
+    """
+    text = st.text_area(label, key=state_key)
+
+    if not allow_space:
+        replaced_text = text.replace(' ', '')
+        if replaced_text != text:
+            st.session_state[state_key] = replaced_text
+            st.warning('The space between the words was automatically removed')
+        return st.session_state[state_key]
+
+    return text
 
 
 def update_text_input(source_key: str, target_key: str):
@@ -112,9 +123,9 @@ def render_generated_cards():
         with st.container():
             col1, col2, col3 = st.columns([1, 1, 1])
             with col1:
-                render_text_area('Deck', 'deck')
+                render_text_area('Deck', 'deck', allow_space=False)
             with col2:
-                render_text_area('Tag', 'tag')
+                render_text_area('Tag', 'tag', allow_space=False)
             with col3:
                 render_export_button()
     else:
